@@ -1,0 +1,60 @@
+name: scoreplay-media-api
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: scoreplay
+      POSTGRES_PASSWORD: scoreplay
+      POSTGRES_DB: scoreplay
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U scoreplay -d scoreplay"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: migrate/migrate:v4.19.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database=postgres://scoreplay:scoreplay@postgres:5432/scoreplay?sslmode=disable
+      - up
+
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      SCOREPLAY_SERVER_PORT: "8080"
+      SCOREPLAY_SERVER_BASE_URL: http://localhost:8080
+      SCOREPLAY_DATABASE_URL: postgres://scoreplay:scoreplay@postgres:5432/scoreplay?sslmode=disable
+      SCOREPLAY_STORAGE_ROOT: /data/media
+      SCOREPLAY_STORAGE_MAX_UPLOAD_BYTES: "536870912"
+      SCOREPLAY_LOG_LEVEL: info
+      TMPDIR: /data/tmp
+    ports:
+      - "8080:8080"
+    volumes:
+      - media-data:/data/media
+      - upload-tmp:/data/tmp
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  pgdata:
+  media-data:
+  upload-tmp:
