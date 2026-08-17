@@ -12,6 +12,7 @@ import (
 	"time"
 
 	api "github.com/vosgaust/scoreplay-media-api/internal/infra/in/http"
+	"github.com/vosgaust/scoreplay-media-api/internal/infra/out/postgres"
 	"github.com/vosgaust/scoreplay-media-api/internal/platform/config"
 	"github.com/vosgaust/scoreplay-media-api/internal/platform/logging"
 )
@@ -34,8 +35,16 @@ func run() error {
 
 	logging.Init(os.Stdout, cfg.General.LogLevel)
 
+	pool, err := postgres.NewPool(ctx, cfg.Database.URL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+
+	slog.Info("database connected")
+
 	srv := &http.Server{
-		Handler:           api.NewRouter(),
+		Handler:           api.NewRouter(pool),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
