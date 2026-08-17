@@ -11,8 +11,7 @@ CREATE TABLE media (
     name         TEXT        NOT NULL,
 
     storage_key  TEXT        NOT NULL UNIQUE,
-    content_type TEXT        NOT NULL,
-    size_bytes   BIGINT      NOT NULL,
+    type         TEXT        NOT NULL,
 
     created_at   TIMESTAMPTZ NOT NULL
 );
