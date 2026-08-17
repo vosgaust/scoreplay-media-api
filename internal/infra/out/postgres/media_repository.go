@@ -86,9 +86,11 @@ func missingTagIDs(requested []uuid.UUID, found []domain.Tag) []uuid.UUID {
 	var missing []uuid.UUID
 
 	for _, id := range requested {
-		if _, ok := existing[id]; !ok {
-			missing = append(missing, id)
+		if _, ok := existing[id]; ok {
+			continue
 		}
+		existing[id] = struct{}{}
+		missing = append(missing, id)
 	}
 
 	return missing
