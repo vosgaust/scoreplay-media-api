@@ -24,7 +24,9 @@ func handleReadyz(database readinessProbe) http.HandlerFunc {
 
 		if err := database.Ping(ctx); err != nil {
 			slog.ErrorContext(ctx, "readiness check failed", "dependency", "postgres", "error", err)
-			writeError(w, r, http.StatusServiceUnavailable, "not_ready", "a dependency is unreachable")
+			writeErrorStatus(w, r, http.StatusServiceUnavailable, errorBody{
+				Code: "not_ready", Message: "a dependency is unreachable",
+			})
 
 			return
 		}

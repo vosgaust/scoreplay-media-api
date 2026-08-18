@@ -11,8 +11,9 @@ type errorEnvelope struct {
 }
 
 type errorBody struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Details map[string]any `json:"details,omitempty"`
 }
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, body any) {
@@ -24,6 +25,6 @@ func writeJSON(w http.ResponseWriter, r *http.Request, status int, body any) {
 	}
 }
 
-func writeError(w http.ResponseWriter, r *http.Request, status int, code, message string) {
-	writeJSON(w, r, status, errorEnvelope{Error: errorBody{Code: code, Message: message}})
+func writeErrorStatus(w http.ResponseWriter, r *http.Request, status int, body errorBody) {
+	writeJSON(w, r, status, errorEnvelope{Error: body})
 }

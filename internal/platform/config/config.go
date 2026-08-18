@@ -28,7 +28,7 @@ type Server struct {
 
 type Storage struct {
 	Root           string `env:"SCOREPLAY_STORAGE_ROOT,default=./data/media"`
-	MaxUploadBytes int64  `env:"SCOREPLAY_STORAGE_MAX_UPLOAD_BYTES,default=5242880"` // 5 MiB
+	MaxUploadBytes int64  `env:"SCOREPLAY_STORAGE_MAX_UPLOAD_BYTES,default=268435456"` // 256 MB
 }
 
 type Database struct {

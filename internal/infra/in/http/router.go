@@ -8,8 +8,7 @@ import (
 	"github.com/go-chi/httplog/v3"
 )
 
-// NewRouter wires the transport layer. It reads slog.Default(), so logging.Init must run first.
-func NewRouter(database readinessProbe) http.Handler {
+func NewRouter(database readinessProbe, tags TagHandler, media MediaHandler) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(httplog.RequestLogger(slog.Default(), &httplog.Options{
@@ -19,6 +18,12 @@ func NewRouter(database readinessProbe) http.Handler {
 
 	r.Get("/healthz", handleHealthz)
 	r.Get("/readyz", handleReadyz(database))
+
+	r.Post("/tags", tags.Create)
+	r.Get("/tags", tags.List)
+
+	r.Post("/media", media.Create)
+	r.Get("/media/{id}", media.Get)
 
 	return r
 }

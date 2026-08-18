@@ -11,8 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/vosgaust/scoreplay-media-api/internal/application"
 	api "github.com/vosgaust/scoreplay-media-api/internal/infra/in/http"
 	"github.com/vosgaust/scoreplay-media-api/internal/infra/out/postgres"
+	"github.com/vosgaust/scoreplay-media-api/internal/infra/out/storage"
 	"github.com/vosgaust/scoreplay-media-api/internal/platform/config"
 	"github.com/vosgaust/scoreplay-media-api/internal/platform/logging"
 )
@@ -43,8 +45,24 @@ func run() error {
 
 	slog.Info("database connected")
 
+	var (
+		tagRepository   = postgres.NewTagRepository(pool)
+		mediaRepository = postgres.NewMediaRepository(pool)
+		fileStore       = storage.NewLocalFileStore(cfg.Storage.Root, cfg.Server.BaseURL)
+
+		tags = api.NewTagHandler(
+			application.NewCreateTagHandler(tagRepository),
+			application.NewListTagsHandler(tagRepository),
+		)
+		media = api.NewMediaHandler(
+			application.NewCreateMediaHandler(mediaRepository, fileStore),
+			application.NewGetMediaHandler(mediaRepository, fileStore),
+			cfg.Storage.MaxUploadBytes,
+		)
+	)
+
 	srv := &http.Server{
-		Handler:           api.NewRouter(pool),
+		Handler:           api.NewRouter(pool, tags, media),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
