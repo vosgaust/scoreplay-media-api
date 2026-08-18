@@ -98,7 +98,8 @@ curl -sS localhost:8080/media/01a013a1-3d2f-73b9-a657-707fffa4f189
 Same body as the upload response.
 
 `fileUrl` is the address the object will have; **this service does not serve the bytes**, so
-`GET <fileUrl>` answers `404` today. I decided to leave this out of the scope of this project as it wouldn't give too much value.
+`GET <fileUrl>` answers `404` today. I decided to leave this out of the scope of this project: for production a local file server wouldn't make sense
+and we would need to implement a CDN. I wanted to focus on designing the architecture instead of useless implementations.
 
 ### Errors
 
